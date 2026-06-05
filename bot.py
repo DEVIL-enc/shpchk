@@ -945,7 +945,7 @@ async def proxy_command(event):
     except Exception as e:
         await status_msg.edit(premium_emoji(f"❌ An error occurred during proxy check: {e}"))
 
-@bot.on(events.NewMessage(pattern='/fuck'))
+@bot.on(events.NewMessage(pattern='/site'))
 async def site_command(event):
     """Check all sites and remove dead ones"""
     user_id = event.sender_id

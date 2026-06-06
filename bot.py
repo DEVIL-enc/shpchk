@@ -9,7 +9,7 @@ import json
 import re
 from datetime import datetime
 # Direct API endpoint (replaces checker_bridge)
-CHECKER_API_URL = 'https://afuona.up.railway.app/shopify'
+CHECKER_API_URL = 'http://62.72.20.10:8081/'
 
 # Premium Custom Emoji IDs (bot must be created with Telegram Premium account)
 # Use @RawDataBot to get custom_emoji_id for any premium emoji
@@ -47,7 +47,7 @@ def premium_emoji(text):
 # Bot Configuration
 API_ID = 39825025
 API_HASH = '47170fd9a11b3f591bbc56849519f0f8'
-BOT_TOKEN = '8827673793:AAENzUDhM3PhXiP5T8_-X9upO32s8ORrhL8'
+BOT_TOKEN = '8827673793:AAFOdEg6mYpaeyo-ROnumwxRAPMZPVWg91k'
 
 
 # File paths

@@ -8,8 +8,7 @@ import time
 import json
 import re
 from datetime import datetime
-
-# Direct API endpoint (replaces checker_bridge) - تم التحديث للرابط الجديد بناءً على طلبك
+# Direct API endpoint (replaces checker_bridge)
 CHECKER_API_URL = 'https://afuona.up.railway.app/shopify'
 
 # Premium Custom Emoji IDs (bot must be created with Telegram Premium account)
@@ -48,7 +47,7 @@ def premium_emoji(text):
 # Bot Configuration
 API_ID = 39825025
 API_HASH = '47170fd9a11b3f591bbc56849519f0f8'
-BOT_TOKEN = '8827673793:AAFOdEg6mYpaeyo-ROnumwxRAPMZPVWg91k'
+BOT_TOKEN = '8827673793:AAENzUDhM3PhXiP5T8_-X9upO32s8ORrhL8'
 
 
 # File paths
@@ -385,7 +384,6 @@ async def test_proxy(proxy):
             return {'proxy': proxy, 'status': 'alive'}
     except:
         return {'proxy': proxy, 'status': 'dead'}
-
 @bot.on(events.NewMessage(pattern='/start'))
 async def start(event):
     await event.reply(
@@ -477,7 +475,7 @@ async def single_cc_check(event):
 
         final_resp = f"""<b>⚡💳 ㅤ#𝐃𝐄𝐕𝐈𝐋 𝐂𝐇𝐊  💳⚡</b>
 <b>━━━━━━━━━━━━━━━━━</b>
-<b>⚡💠 𝐑e𝐬𝐮𝐥𝐭𝐬</b>
+<b>⚡💠 𝐑𝐞𝐬𝐮𝐥𝐭𝐬</b>
 <blockquote>{status_emoji} Status: {status_text}</blockquote>
 <blockquote>💳 Card: <code>{result['card']}</code></blockquote>
 <blockquote>📝 Response: {result['message'][:150]}</blockquote>
